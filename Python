@@ -2,10 +2,9 @@ import array
 import json
 from pprint import pprint
 
-class myException(Exception): pass
-    #def __init__ (): pass
-        #self.price = smth
-        #return "Введено недопустимое значение"
+class myException(Exception): 
+    def __str__(self):
+        return "Введено недопустимое значение"
 
 def read(filename):
     with open(filename,'r') as file:
@@ -21,7 +20,7 @@ class menu():
         self.name = name
         self.price = price
         if price < 0:
-           raise myException("Введено недопустимое значение")
+           raise myException()
         self.ingredients = ingredients
     def description (): pass
 
