@@ -2,35 +2,52 @@ import array
 import json
 from pprint import pprint
 
-class myException(Exception): 
+
+class myException(Exception):
     def __str__(self):
         return "Введено недопустимое значение"
 
+
 def read(filename):
-    with open(filename,'r') as file:
+    with open(filename, 'r') as file:
         data = json.load(file)
-    return(data)
+    return (data)
+
 
 def write(data, filename):
-    with open(filename,'w') as file:
-        json.dump(data, file)
+    with open(filename, 'w') as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+
+def delete(data, filename, whatToDelete):
+    min = 0
+    for txt in data['menu']:
+        if txt['name'] == whatToDelete:
+            data['menu'].pop(min)
+        min = min+1
+    return(data)
+
 
 class menu():
     def __init__(self, name, price, ingredients):
         self.name = name
         self.price = price
         if price < 0:
-           raise myException()
+            raise myException()
         self.ingredients = ingredients
-    def description (): pass
+
+    def description(self): pass
+
 
 class dishes(menu):
     def description(self):
         print("You can eat the ", self.name, " by ", self.price, "$ with some", *self.ingredients)
 
+
 class drinks(menu):
     def description(self):
         print("You can drink the ", self.name, " by ", self.price, "$ with some", *self.ingredients)
+
 
 chicken = dishes("chicken", 8, ['chiken,', 'soy sauce,', 'paprika'])
 chicken.description()
@@ -38,10 +55,12 @@ chicken.description()
 strawberryMilkshake = drinks("strawberry milkshake", 5, ['milk,', 'cream,', 'strawberry'])
 strawberryMilkshake.description()
 
-readJson = read('JSON_menu.json')
-pprint (readJson)
+data = {'name': 'salad', 'price': 7, 'ingredients': 'tomato, cucumber, salad, sour cream'}
+readJsonToAppend = read('JSON_menu.json')
+readJsonToAppend['menu'].append(data)
+writeJson = write(readJsonToAppend, 'JSON_menu.json')
 
-#data = {'menu':{'dishes':{'dish':[{'name': 'salad','price': 7,'ingredients': 'tomato, cucumber, salad, sour cream'}}}}
-data = {'dish':{'name': 'salad','price': 7,'ingredients': 'tomato, cucumber, salad, sour cream'}}
-        
-writeJson = write(data, 'JSON_menu.json')
+readJsonToDelete = read('JSON_menu.json')
+readJsonToDelete = delete(readJsonToDelete, 'JSON_menu.json', 'tea')
+writeJson = write(readJsonToDelete, 'JSON_menu.json')
+
