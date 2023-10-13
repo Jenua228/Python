@@ -1,0 +1,25 @@
+<menu>
+	<dishes>
+		<dish>
+			<name>salad</name>
+			<price>7</price>
+			<ingredients>tomato, cucumber, salad, sour cream</ingredients>
+		</dish>
+		<dish>
+			<name>meatball</name>
+			<price>3</price>
+			<ingredients>meat, salt, pepper, bread, egg</ingredients>
+		</dish>
+	</dishes>
+	<drinks>
+		<drink "price" = 6>
+			<name>smoothie</name>
+			<ingredients>banana, strawberry, cream, ice cream</ingredients>
+		</drink>
+		<drink>
+			<name>tea</name>
+			<price>2</price>
+			<ingredients>black tea, orange, mint, sugar</ingredients>
+		</drink>
+	</drinks>
+</menu>
