@@ -1,0 +1,126 @@
+from tkinter import *
+from tkinter import ttk
+# import tkinter.ttk as ttk
+
+root = Tk()
+root.title("Адресно-телефонная книга")
+root.geometry("500x550")
+
+#прямоугольник (для организации интерфейса в разные блоки)   #pady - отступ от границ по вертикали
+frame = Frame(root)
+frame.pack(pady=20)
+
+frameScroll = Scrollbar(frame)
+frameScroll.pack(side=RIGHT, fill=Y)
+
+#отображениe иерархических данных, причем как в виде дерева, так и в виде таблицы.
+myBook = ttk.Treeview(frame, yscrollcommand=frameScroll.set, selectmode="extended", show="headings")
+myBook.pack()   #selectmode - режим выбора элементов в виджете
+
+frameScroll.config(command=myBook.yview)
+
+myBook['columns'] = ("Telephone", "Address")
+
+myBook.column("Telephone", anchor=W, width=140) #anchor - помещает виджет в опр. часть контейнера (буквы по частям света)
+myBook.column("Address", anchor=W, width=140)
+
+myBook.heading("Telephone", text="Telephone", anchor=CENTER)
+myBook.heading("Address", text="Address", anchor=CENTER)
+
+data =[
+    ["89000164859", "address1"],
+    ["89206815989", "address2"],
+    ["89000161274", "address3"],
+    ["89000164872", "address4"],
+    ["89041364082", "address5"],
+    ["89203694216", "address6"],
+    ["89056235948", "address7"],
+    ["89005698741", "address8"],
+    ["89000131026", "address9"],
+    ["89203698452", "address10"],
+    ["89031269485", "address11"],
+    ["89000336859", "address12"]
+]
+
+myBook.tag_configure('all', background="#B2DFDB")
+
+global count
+count = 0
+for i in data:
+    myBook.insert(parent='', index='end', iid=count, values=(i[0], i[1]), tags='all')
+    count += 1
+
+def delete():
+    a = myBook.selection()
+    myBook.delete(a)
+
+"""def add():
+    forAdd = Tk()
+    forAdd.geometry("500x100")
+    add_frame = Frame(forAdd)
+    add_frame.pack(pady=20)
+    myBook.tag_configure('all', background="lightblue")
+
+    telephoneLabel = Label(add_frame, text="Telephone")
+    telephoneLabel.grid(row=0, column=0)
+    addressLabel = Label(add_frame, text="Address")
+    addressLabel.grid(row=0, column=1)
+
+    telephoneBox = Entry(add_frame)
+    telephoneBox.grid(row=1, column=0)
+
+    addressBox = Entry(add_frame)
+    addressBox.grid(row=1, column=1)
+
+    while True:
+        if telephoneBox.get() is not None and addressBox is not None:
+            break
+
+    global count
+    myBook.insert(parent='', index='end', iid=count, text="", values=(telephoneBox.get(), addressBox.get()), tags='all')
+    count += 1
+
+    forAdd.mainloop()
+    #forAdd.destroy()
+
+    telephoneBox.delete(0, END)
+    addressBox.delete(0, END)"""
+
+add_frame = Frame(root)
+add_frame.pack(pady=20)
+telephoneLabel = Label(add_frame, text="Telephone")
+telephoneLabel.grid(row=0, column=0)
+addressLabel = Label(add_frame, text="Address")
+addressLabel.grid(row=0, column=1)
+
+telephoneBox = Entry(add_frame)
+telephoneBox.grid(row=1, column=0)
+
+addressBox = Entry(add_frame)
+addressBox.grid(row=1, column=1)
+
+def add():
+    myBook.tag_configure('all', background="#B2DFDB")
+    global count
+    myBook.insert(parent='', index='end', iid=count, text="", values=(telephoneBox.get(), addressBox.get()), tags='all')
+
+    data.insert(count, [telephoneBox.get(), addressBox.get()])
+
+    count += 1
+    telephoneBox.delete(0, END)
+    addressBox.delete(0, END)
+
+def addToFile():
+    with open("myBook.txt", "w") as file:
+        for i in data:
+            file.write(str(i)+'\n')
+    return file
+
+delete = Button(root, text="Delete one selected", command=delete, background="#B2DFDB")
+delete.pack(pady=10)
+add = Button(root, text="Add", command=add, background="#B2DFDB")
+add.pack(pady=10)
+addToFile = Button(root, text="Add to the file", command=addToFile, background="#B2DFDB")
+addToFile.pack(pady=10)
+
+root.mainloop()
