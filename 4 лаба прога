@@ -1,0 +1,83 @@
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
+import requests
+import logging
+from aiogram import *
+from aiogram import Bot, types, Dispatcher
+from aiogram.filters import CommandStart
+from aiogram.enums import ParseMode
+import sys
+import asyncio
+from aiogram import F
+
+import asyncio
+import logging
+import sys
+from os import getenv
+
+from aiogram import Bot, Dispatcher, Router, types
+from aiogram.enums import ParseMode
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+from aiogram.utils.markdown import hbold
+
+TOKEN = "6631264819:AAFpl9lbitMJxkRLw1-cGK46zHT4T9lC9rc"
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+url = "https://api.spoonacular.com/recipes/findByIngredients?apiKey=a9d06e678b5a4d869b8d064b937b16d0"
+
+@dp.message(CommandStart())
+async def start(msg: types.Message):
+    await bot.send_message(msg.chat.id, "Привет!\nНапиши ингредиенты, из которых ты хочешь составить блюдо\nСоветую писать с маленькой буквы через запятую :)")
+
+@dp.message(F.text)
+async def message(msg: types.Message):
+    if msg.text !='/start':
+        ingredients = {'ingredients':msg.text, 'number':5, 'ranking':2}
+        response = requests.get(url, params=ingredients)
+
+    for i in range(5):
+        if msg.text != response.json()[i]["title"]:
+            kb = [[types.KeyboardButton(text=response.json()[0]["title"]),
+            types.KeyboardButton(text=response.json()[1]["title"]),
+            types.KeyboardButton(text=response.json()[2]["title"]),
+            types.KeyboardButton(text=response.json()[3]["title"]),
+            types.KeyboardButton(text=response.json()[4]["title"])],]
+
+            keyboard = types.ReplyKeyboardMarkup(
+                keyboard=kb,
+                resize_keyboard=True
+            )
+            await bot.send_message(msg.chat.id, 'Можешь приготовить:\n%s' % response.json()[0]["title"] + '\n%s' %
+                                   response.json()[1]["title"] + '\n%s' % response.json()[2]["title"] + '\n%s' %
+                                   response.json()[3]["title"] + '\n%s' % response.json()[4]["title"] + '\nНажми на понравившиеся блюдо, чтобы увидеть состав',
+                                   reply_markup=keyboard)
+
+            return
+        else:
+            #for j in range(5):
+            #if response.json()[i]["title"] == msg.text:
+            result = []
+            for t in response.json()[i]["missedIngredients"]:
+                result.append(
+                        t["name"]
+                )
+            await bot.send_message(msg.chat.id, "Состав блюда:\n%s" % ', '.join(result))
+            print(response.json()[0])
+            print(response.json()[1])
+            print(response.json()[2])
+            print(response.json()[3])
+            print(response.json()[4])
+            return
+
+
+async def main() -> None:
+    # Initialize Bot instance with a default parse mode which will be passed to all API calls
+    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+    # And the run events dispatching
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    asyncio.run(main())
+
