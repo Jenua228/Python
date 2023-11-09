@@ -1,10 +1,12 @@
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
+from telegram.ext import Updater, CommandHandler, CallbackContext
+from aiogram.handlers import MessageHandler
 import requests
 import logging
 from aiogram import *
+from aiogram.fsm.context import FSMContext
 from aiogram import Bot, types, Dispatcher, Router
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.enums import ParseMode
 import sys
 import asyncio
@@ -23,36 +25,34 @@ flag = False
 async def start(msg: types.Message):
     await bot.send_message(msg.chat.id, "Привет!\nНапиши ингредиенты, из которых ты хочешь составить блюдо\nСоветую писать с маленькой буквы через запятую :)")
 
+@dp.message(F.text, Command("args"))
+async def args(msg: types.Message, command: CommandObject, state: FSMContext):
+    ingredients = {'ingredients': command.args, 'number': 5, 'ranking': 2}
+    response = requests.get(url, params=ingredients)
+    await state.set_data(data=response.json())
+    data = await state.get_data()
+    kb =[
+        [types.KeyboardButton(text=d['title']) for d in data]
+    ]
+    keyboard = types.ReplyKeyboardMarkup(
+        keyboard=kb,
+        resize_keyboard=True, one_time_keyboard=True
+    )
+    await bot.send_message(msg.chat.id, 'Можешь приготовить:\n%s' % [d['title'] for d in data], reply_markup=keyboard)
+
 @dp.message(F.text)
-async def message(msg: types.Message):
-    global flag
-    if msg.text !='/start' and flag == False:
-        ingredients = {'ingredients': msg.text, 'number': 5, 'ranking': 2}
-        response = requests.get(url, params=ingredients)
-        data = response.json()[:5]
-        flag = True
+async def message(msg: types.Message, state: FSMContext):
+    #if msg.text.upper() not in [d["title"].upper() for d in data]:
+    data = await state.get_data()
+    result = []
 
-    #if flag == True:
-    if msg.text.upper() not in [d["title"].upper() for d in data]:
-        kb = [[types.KeyboardButton(text=d["title"]) for d in data]]
-        keyboard = types.ReplyKeyboardMarkup(
-            keyboard=kb,
-            resize_keyboard=True, one_time_keyboard=True
-        )
-        await bot.send_message(msg.chat.id, 'Можешь приготовить:\n%s' % [d["title"] for d in data])
-            #flag = False
-        #return
-    elif flag == True:
-        result = []
-
-        for d in data:
-            if msg.text.upper() == d["title"].upper():
-                for t in d["missedIngredients"]:
-                    result.append(
-                        t["name"]
-                    )
-        await bot.send_message(msg.chat.id, "Состав блюда:\n%s" % ', '.join(result))
-        flag = False
+    for d in data:
+        if msg.text.upper() == d["title"].upper():
+            for t in d["missedIngredients"]:
+                result.append(
+                    t["name"]
+                )
+    await bot.send_message(msg.chat.id, "Состав блюда:\n%s" % ', '.join(result))
         #return
 
 async def main() -> None:
